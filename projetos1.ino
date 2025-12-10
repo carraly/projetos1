@@ -18,36 +18,27 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 // ====================== SERVOS ======================
-Servo servo1;
+
 Servo servo2;
-#define SERVO1_PIN 2
+
 #define SERVO2_PIN 3
 
 // ====================== ULTRASSÔNICO ======================
-#define TRIG_PIN 9
+#define TRIG_PIN 13
 #define ECHO_PIN 8
 
 // ====================== UIDs AUTORIZADOS ======================
 String uids_autorizados[] = {
-  "CD AD A2 F2",
-  "3D EE A6 F2",
-  "A2 64 F3 00",
-  "12 34 56 78",
-  "FD 19 E0 F1",
-  "DD 5E A8 F2",
-  "92 37 F9 00",
-  "12 A6 EA 00",
-  "A2 F0 F2 00",
-  "DD 8D 00 C2",
-  "5D 43 F2 F1",
-  "92 72 ED 00"
+  "D6 37 28 06",
+  "AB E4 27 06",
+  "12 3D 26 06"
 };
 const int total_uids = sizeof(uids_autorizados) / sizeof(uids_autorizados[0]);
 
 // ====================== VARIÁVEIS GLOBAIS ======================
 int contadorObjetos = 0;     
 bool objetoPresente = false; 
-const int LIMITE_OBJETOS = 5; // limite de armazenamento
+const int LIMITE_OBJETOS = 3; // limite de armazenamento
 
 // ====================== SETUP ======================
 void setup() {
@@ -84,9 +75,7 @@ void setup() {
   lcd.clear();
 
   // Servos
-  servo1.attach(SERVO1_PIN);
   servo2.attach(SERVO2_PIN);
-  servo1.write(0);
   servo2.write(180);
 }
 
@@ -112,33 +101,12 @@ void loop() {
     lcd.setCursor(0, 0);
     lcd.print("ESTOQUE CHEIO!");
     lcd.setCursor(0, 1);
-    lcd.print("Capacidade: 5");
+    lcd.print("Capacidade: 3");
     tone(BUZZER, 1200);
     delay(800);
     noTone(BUZZER);
     delay(2000);
     return; // bloqueia novas leituras
-  }
-
-  // ---- Leitura do sensor ultrassônico ----
-  int distancia = lerDistancia();
-
-  if (distancia > 0 && distancia < 20 && !objetoPresente) {
-    objetoPresente = true;
-    contadorObjetos++;
-    Serial.print("Objeto detectado! Total: ");
-    Serial.println(contadorObjetos);
-
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Objeto detectado!");
-    lcd.setCursor(0, 1);
-    lcd.print("Total: ");
-    lcd.print(contadorObjetos);
-    delay(1000);
-  } 
-  else if (distancia >= 25) {
-    objetoPresente = false;
   }
 
   // ---- Leitura do RFID ----
@@ -181,10 +149,22 @@ void loop() {
       return;
     }
 
-    Serial.println("Acesso AUTORIZADO!");
+    if (conteudo == "D6 37 28 06") {
+      lcd.setCursor(0, 0);
+      lcd.print("Moto G24");
+    }
+    else if (conteudo == "AB E4 27 06") {
+      lcd.setCursor(0, 0);
+      lcd.print("Iphone 16e");
+    }
+    else if (conteudo == "12 3D 26 06") {
+      lcd.setCursor(0, 0);
+      lcd.print("POCO M7 Pro 5G");
+    }
     digitalWrite(LED_AUTORIZADO, HIGH);
     digitalWrite(LED_NEGADO, LOW);
 
+    delay(1500);
     lcd.setCursor(0, 0);
     lcd.print("APROVADO :)");
     lcd.setCursor(0, 1);
@@ -211,11 +191,32 @@ void loop() {
 
     // Movimento dos servos
     servo2.write(90);
-    servo1.write(90);
+
+    while (true) {
+      // ---- Leitura do sensor ultrassônico ----
+      int distancia = lerDistancia();
+
+      if (distancia > 0 && distancia < 20 && !objetoPresente) {
+        objetoPresente = true;
+        contadorObjetos++;
+        Serial.print("Objeto detectado! Total: ");
+        Serial.println(contadorObjetos);
+
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Objeto detectado!");
+        lcd.setCursor(0, 1);
+        lcd.print("Total: ");
+        lcd.print(contadorObjetos);
+        delay(2000);
+        break;
+      } 
+      else if (distancia >= 25) {
+        objetoPresente = false;
+      }
+    }
     
-    delay(5000);
-    
-    servo1.write(0);
+    lcd.clear();
     servo2.write(180);
 
     delay(500);
