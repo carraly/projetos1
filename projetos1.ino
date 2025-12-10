@@ -86,8 +86,8 @@ void setup() {
   // Servos
   servo1.attach(SERVO1_PIN);
   servo2.attach(SERVO2_PIN);
-  servo1.write(0);
-  servo2.write(0);
+  servo1.write(90);
+  servo2.write(90);
 }
 
 // ====================== FUNÇÃO ULTRASSÔNICO ======================
@@ -210,17 +210,16 @@ void loop() {
     delay(1300);
 
     // Movimento dos servos
-    for (int pos = 0; pos <= 180; pos++) {
-      servo1.write(pos);
-      servo2.write(pos);
-      delay(10);
-    }
+    servo1.write(180);
+    servo2.write(0);
+    delay(10);
+    
     delay(1000);
-    for (int pos = 180; pos >= 0; pos--) {
-      servo1.write(pos);
-      servo2.write(pos);
-      delay(10);
-    }
+    
+    servo1.write(90);
+    servo2.write(90);
+    delay(10);
+    
 
     delay(500);
     digitalWrite(LED_AUTORIZADO, LOW);
